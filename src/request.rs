@@ -16,48 +16,31 @@
 // along with inwx-rs.  If not, see <http://www.gnu.org/licenses/>.
 
 
-extern crate xmlrpc;
-extern crate reqwest;
+use std::collections::BTreeMap;
 
-mod connection;
-pub mod request;
-pub mod account;
-pub mod nameserver;
+use xmlrpc::Request as XMLRequest;
+pub use xmlrpc::Value;
 
 
-use std::sync::Arc;
-use std::sync::Mutex;
-
-use xmlrpc::Value;
-
-use connection::Connection;
-use account::Account;
-use nameserver::Nameserver;
-
-
-pub struct Domrobot {
-    pub account: Account,
-    pub nameserver: Nameserver,
+pub struct Request {
+    method: String,
+    params: BTreeMap<String, Value>,
 }
 
 
-#[derive(Debug, PartialEq)]
-pub enum RequestError {
-    NotLoggedIn,
-    LoginFailed,
-    SendFailed,
-    InvalidResponse,
-    CallError(i32, String),
-}
-
-
-impl Domrobot {
-    pub fn new(testing: bool) -> Self {
-        let conn = Arc::new(Mutex::new(Connection::new(testing)));
-
+impl Request {
+    pub fn new(method: &str) -> Self {
         Self {
-            account: Account { conn: conn.clone() },
-            nameserver: Nameserver { conn: conn.clone() },
+            method: method.to_owned(),
+            params: BTreeMap::new(),
         }
+    }
+
+    pub fn param(&mut self, name: &str, value: Value) -> Option<Value> {
+        self.params.insert(name.to_owned(), value)
+    }
+
+    pub(crate) fn build(&self) -> XMLRequest {
+        XMLRequest::new(&self.method).arg(Value::Struct(self.params.clone()))
     }
 }

@@ -46,14 +46,14 @@ fn main() {
     let domain = read_line("Domain: ");
 
     let mut inwx = Domrobot::new(false);
-    let acc_info = inwx.account_login(&name, &pass).unwrap();
+    let acc_info = inwx.account.login(&name, &pass).unwrap();
     println!("Account info: {:?}", acc_info);
 
-    let info = inwx.nameserver_info(&domain).unwrap();
+    let info = inwx.nameserver.info(&domain).unwrap();
     println!("Records:");
     for record in info.records {
         println!("{:?}", record);
     }
 
-    inwx.account_logout().unwrap();
+    inwx.account.logout().unwrap();
 }
