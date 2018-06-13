@@ -43,10 +43,12 @@ pub struct Account {
 
 impl Account {
     pub fn login(&self, user: &str, pass: &str) -> Result<LoginInfo, RequestError> {
+        const E: RequestError = RequestError::InvalidResponse;
+
         let mut req = Request::new("account.login");
         req.param("user", Value::from(user));
         req.param("pass", Value::from(pass));
-        let res = self.conn.lock().unwrap().send(&req)?;
+        let res = self.conn.lock().unwrap().send(&req)?.ok_or(E)?;
 
         // first check, that we now have a domrobot cookie
         if self.conn.lock().unwrap().cookies.get("domrobot").is_none() {
@@ -54,7 +56,6 @@ impl Account {
         }
 
         // parse info
-        const E: RequestError = RequestError::InvalidResponse;
         Ok(LoginInfo {
             customer_id: res.get("customerId").ok_or(E)?.as_i32().ok_or(E)?,
             account_id: res.get("accountId").ok_or(E)?.as_i32().ok_or(E)?,

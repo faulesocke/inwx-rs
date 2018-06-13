@@ -33,14 +33,16 @@ use super::Value;
 
 pub(crate) struct Connection {
     pub(crate) testing: bool,
+    pub(crate) debug: bool,
     pub(crate) cookies: Cookie,
 }
 
 
 impl Connection {
-    pub(crate) fn new(testing: bool) -> Self {
+    pub(crate) fn new(testing: bool, debug: bool) -> Self {
         Self {
-            testing: testing,
+            testing,
+            debug,
             cookies: Cookie::new(),
         }
     }
@@ -54,23 +56,34 @@ impl Connection {
         }
     }
 
-    pub(crate) fn send(&mut self, req: &Request) -> Result<BTreeMap<String, Value>, RequestError> {
-        let tp = INWXTransport { conn: self };
-        let res = req.build().call(tp);
-        let res = res.map_err(|_| RequestError::SendFailed)?;
+    pub(crate) fn send(
+        &mut self,
+        req: &Request,
+    ) -> Result<Option<BTreeMap<String, Value>>, RequestError> {
+        let res = {
+            let tp = INWXTransport { conn: self };
+            let res = req.build().call(tp);
+            res.map_err(|_| RequestError::SendFailed)?
+        };
 
         const E: RequestError = RequestError::InvalidResponse;
+
+        if self.debug {
+            println!("Response: {:?}", res);
+        }
 
         let res = res.as_struct().ok_or(E)?;
         let code = res.get("code").ok_or(E)?.as_i32().ok_or(E)?;
         let msg = res.get("msg").ok_or(E)?.as_str().ok_or(E)?;
 
         match code {
-            1000 => {
-                let data = res.get("resData").ok_or(E)?.as_struct().ok_or(E)?;
-                Ok(data.clone())
+            1000 | 1500 => {
+                if let Some(data) = res.get("resData") {
+                    Ok(Some(data.as_struct().ok_or(E)?.clone()))
+                } else {
+                    Ok(None)
+                }
             }
-            1500 => Ok(BTreeMap::new()),
             _ => Err(RequestError::CallError(code, msg.to_string())),
         }
     }

@@ -37,7 +37,7 @@ pub struct DomainInfo {
 }
 
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct DomainRecord {
     pub id: i32,
     pub name: String,
@@ -59,7 +59,7 @@ impl Nameserver {
 
         let mut req = Request::new("nameserver.info");
         req.param("domain", Value::from(domain));
-        let res = self.conn.lock().unwrap().send(&req)?;
+        let res = self.conn.lock().unwrap().send(&req)?.ok_or(E)?;
 
         let domain = res.get("domain").ok_or(E)?.as_str().ok_or(E)?.to_owned();
         let ro_id = res.get("roId").ok_or(E)?.as_i32().ok_or(E)?;

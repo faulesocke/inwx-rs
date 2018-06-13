@@ -52,8 +52,8 @@ pub enum RequestError {
 
 
 impl Domrobot {
-    pub fn new(testing: bool) -> Self {
-        let conn = Arc::new(Mutex::new(Connection::new(testing)));
+    pub fn new(testing: bool, debug: bool) -> Self {
+        let conn = Arc::new(Mutex::new(Connection::new(testing, debug)));
 
         Self {
             account: Account { conn: conn.clone() },
