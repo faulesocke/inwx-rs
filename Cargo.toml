@@ -1,11 +1,16 @@
 [package]
 name = "inwx"
-version = "0.0.3"
+version = "0.1.0"
 authors = ["Urs Schulz <github@ursschulz.de>"]
 license = "AGPL-3.0"
 description = "A tiny inwx domrobot API binding entirely written in Rust"
-repository = "https://github.com/faulesocke/inwx-rs"
+repository = "https://gitlab.com/faulesocke/inwx-rs"
+documentation = "https://docs.rs/inwx/"
 edition = "2018"
+
+[badges]
+gitlab = { repository = "faulesocke/inwx-rs" }
+maintenance = { status = "actively-developed" }
 
 [dependencies]
 xmlrpc = "0.13"
