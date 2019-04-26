@@ -1,4 +1,4 @@
-// Copyright 2018 Urs Schulz
+// Copyright 2018-2019 Urs Schulz
 //
 // This file is part of inwx-rs.
 //
@@ -16,14 +16,14 @@
 // along with inwx-rs.  If not, see <http://www.gnu.org/licenses/>.
 
 
-use std::sync::Mutex;
 use std::sync::Arc;
+use std::sync::Mutex;
 
-use super::Value;
 use super::RequestError;
+use super::Value;
 
-use request::Request;
 use connection::Connection;
+use request::Request;
 
 
 #[derive(Debug)]
@@ -66,9 +66,10 @@ impl Account {
     }
 
     pub fn logout(&self) -> Result<(), RequestError> {
-        self.conn.lock().unwrap().send(
-            &Request::new("account.logout"),
-        )?;
+        self.conn
+            .lock()
+            .unwrap()
+            .send(&Request::new("account.logout"))?;
         Ok(())
     }
 }

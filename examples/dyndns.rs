@@ -32,15 +32,16 @@
 //! ```
 
 
-extern crate inwx;
 extern crate igd;
-extern crate toml;
+extern crate inwx;
 extern crate serde;
+extern crate toml;
 #[macro_use]
 extern crate serde_derive;
 
-use std::path::Path;
+
 use std::net::Ipv4Addr;
+use std::path::Path;
 
 
 #[derive(Deserialize)]
@@ -51,10 +52,12 @@ struct INWXConfig {
     record: String,
 }
 
+
 #[derive(Deserialize)]
 struct GatewayConfig {
     search_iface: Option<Ipv4Addr>,
 }
+
 
 #[derive(Deserialize)]
 struct Config {
@@ -69,14 +72,11 @@ fn read_config(path: &Path) -> Config {
 
     let mut data = String::new();
 
-    let mut f = File::open(path).expect(
-        format!("Config file {} not found", path.to_str().unwrap())
-            .as_ref(),
-    );
+    let mut f = File::open(path)
+        .expect(format!("Config file {} not found", path.to_str().unwrap()).as_ref());
 
-    f.read_to_string(&mut data).expect(
-        "Failed to read config file",
-    );
+    f.read_to_string(&mut data)
+        .expect("Failed to read config file");
 
     toml::from_str(&data).expect("Failed to parse config file")
 }
@@ -84,9 +84,12 @@ fn read_config(path: &Path) -> Config {
 
 fn get_public_ip(cfg: &Config) -> Ipv4Addr {
     let gateway = match cfg.gateway {
-        Some(GatewayConfig { search_iface: Some(iface) }) => igd::search_gateway_from(iface),
+        Some(GatewayConfig {
+            search_iface: Some(iface),
+        }) => igd::search_gateway_from(iface),
         _ => igd::search_gateway(),
-    }.expect("No gateway found");
+    }
+    .expect("No gateway found");
 
     gateway.get_external_ip().expect("Public IP not found")
 }
@@ -112,13 +115,14 @@ fn main() -> Result<(), usize> {
 
     // inwx login
     let mut dr = inwx::Domrobot::new(false, false);
-    dr.account.login(&cfg.inwx.user, &cfg.inwx.pass).expect(
-        "INWX login failed",
-    );
+    dr.account
+        .login(&cfg.inwx.user, &cfg.inwx.pass)
+        .expect("INWX login failed");
 
-    let info = dr.nameserver.info(&cfg.inwx.domain).expect(
-        "Failed to retrieve domain info",
-    );
+    let info = dr
+        .nameserver
+        .info(&cfg.inwx.domain)
+        .expect("Failed to retrieve domain info");
 
     println!("Current record set:");
     for record in &info.records {
@@ -136,9 +140,9 @@ fn main() -> Result<(), usize> {
     v4rec.content = ip.to_string();
     println!("Record after update {:?}", v4rec);
 
-    dr.nameserver.update_record(&v4rec).expect(
-        "Failed to update record",
-    );
+    dr.nameserver
+        .update_record(&v4rec)
+        .expect("Failed to update record");
 
     println!("Records after update:");
     for record in &info.records {

@@ -17,13 +17,13 @@
 
 #![deny(warnings)]
 
-extern crate xmlrpc;
 extern crate reqwest;
+extern crate xmlrpc;
 
-mod connection;
-pub mod request;
 pub mod account;
+mod connection;
 pub mod nameserver;
+pub mod request;
 
 
 use std::sync::Arc;
@@ -31,8 +31,8 @@ use std::sync::Mutex;
 
 use xmlrpc::Value;
 
-use connection::Connection;
 use account::Account;
+use connection::Connection;
 use nameserver::Nameserver;
 
 
