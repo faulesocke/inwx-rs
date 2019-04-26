@@ -31,9 +31,9 @@ use std::sync::Mutex;
 
 use xmlrpc::Value;
 
-use account::Account;
-use connection::Connection;
-use nameserver::Nameserver;
+use crate::account::Account;
+use crate::connection::Connection;
+use crate::nameserver::Nameserver;
 
 
 pub struct Domrobot {

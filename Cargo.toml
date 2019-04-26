@@ -5,6 +5,7 @@ authors = ["Urs Schulz <github@ursschulz.de>"]
 license = "AGPL-3.0"
 description = "A tiny inwx domrobot API binding entirely written in Rust"
 repository = "https://github.com/faulesocke/inwx-rs"
+edition = "2018"
 
 [dependencies]
 xmlrpc = "0.13"

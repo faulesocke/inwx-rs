@@ -1,4 +1,4 @@
-// Copyright 2018 Urs Schulz
+// Copyright 2018-2019 Urs Schulz
 //
 // This file is part of inwx-rs.
 //
@@ -19,9 +19,9 @@
 use std::sync::Arc;
 use std::sync::Mutex;
 
-use request::Request;
+use crate::request::Request;
 
-use connection::Connection;
+use crate::connection::Connection;
 
 use super::RequestError;
 use super::Value;

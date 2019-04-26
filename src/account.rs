@@ -22,8 +22,8 @@ use std::sync::Mutex;
 use super::RequestError;
 use super::Value;
 
-use connection::Connection;
-use request::Request;
+use crate::connection::Connection;
+use crate::request::Request;
 
 
 #[derive(Debug)]

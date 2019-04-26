@@ -22,7 +22,7 @@ use std::error::Error;
 use xmlrpc::Request as XMLRequest;
 use xmlrpc::Transport;
 
-use request::Request;
+use crate::request::Request;
 use reqwest::header::HeaderMap;
 use reqwest::Response;
 
