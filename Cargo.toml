@@ -7,8 +7,8 @@ description = "A tiny inwx domrobot API binding entirely written in Rust"
 repository = "https://github.com/faulesocke/inwx-rs"
 
 [dependencies]
-xmlrpc = "0.11.1"
-reqwest = "0.8.0"
+xmlrpc = "0.13"
+reqwest = "0.9"
 
 [dev-dependencies]
 igd = "0.7.0"

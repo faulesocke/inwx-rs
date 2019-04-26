@@ -1,4 +1,4 @@
-// Copyright 2018 Urs Schulz
+// Copyright 2018-2019 Urs Schulz
 //
 // This file is part of inwx-rs.
 //
@@ -15,21 +15,22 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with inwx-rs.  If not, see <http://www.gnu.org/licenses/>.
 
-/// This is a small program I run as a service on my home server to set my dyndns IP address.
-/// It uses `igd` to retrieve the current router IP. Then it uses `inwx` to update a dns record.
-/// It also reads it's configuration from a `.toml` file.
-/// This configuration file is in the form:
-///
-/// ```norust
-/// [inwx]
-/// user = "foo"
-/// pass = "bar"
-/// domain = "foo.bar"
-/// record = "home.foo.bar"
-///
-/// [gateway]
-/// search_iface = "192.168.1.1"
-/// ```
+//! This is a small program I run as a service on my home server to set my dyndns IP address.
+//! It uses `igd` to retrieve the current router IP. Then it uses `inwx` to update a dns record.
+//! It also reads it's configuration from a `.toml` file.
+//! This configuration file is in the form:
+//!
+//! ```norust
+//! [inwx]
+//! user = "foo"
+//! pass = "bar"
+//! domain = "foo.bar"
+//! record = "home.foo.bar"
+//!
+//! [gateway]
+//! search_iface = "192.168.1.1"
+//! ```
+
 
 extern crate inwx;
 extern crate igd;
@@ -120,16 +121,16 @@ fn main() -> Result<(), usize> {
     );
 
     println!("Current record set:");
-    let mut v4rec = None;
     for record in &info.records {
         println!("    {:?}", record);
-
-        if record.typ == "A" && record.name == cfg.inwx.record {
-            v4rec = Some(record.clone());
-        }
     }
 
-    let mut v4rec = v4rec.expect("Record not found or type is not A");
+    let v4rec = info
+        .records
+        .iter()
+        .filter(|r| r.typ == "A" && r.name == cfg.inwx.record)
+        .next();
+    let mut v4rec = v4rec.expect("Record not found or type is not A").clone();
     println!("Record is {:?}", v4rec);
 
     v4rec.content = ip.to_string();

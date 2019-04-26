@@ -1,4 +1,4 @@
-// Copyright 2018 Urs Schulz
+// Copyright 2018-2019 Urs Schulz
 //
 // This file is part of inwx-rs.
 //
@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU Affero General Public License
 // along with inwx-rs.  If not, see <http://www.gnu.org/licenses/>.
 
+#![deny(warnings)]
 
 extern crate xmlrpc;
 extern crate reqwest;

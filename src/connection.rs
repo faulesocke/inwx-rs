@@ -1,4 +1,4 @@
-// Copyright 2018 Urs Schulz
+// Copyright 2018-2019 Urs Schulz
 //
 // This file is part of inwx-rs.
 //
@@ -16,16 +16,15 @@
 // along with inwx-rs.  If not, see <http://www.gnu.org/licenses/>.
 
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, HashMap};
 use std::error::Error;
 
-use xmlrpc::Transport;
 use xmlrpc::Request as XMLRequest;
-
-use reqwest::header::Cookie;
-use reqwest::Response;
+use xmlrpc::Transport;
 
 use request::Request;
+use reqwest::header::HeaderMap;
+use reqwest::Response;
 
 use super::RequestError;
 use super::Value;
@@ -34,7 +33,7 @@ use super::Value;
 pub(crate) struct Connection {
     pub(crate) testing: bool,
     pub(crate) debug: bool,
-    pub(crate) cookies: Cookie,
+    pub(crate) cookies: HashMap<String, String>,
 }
 
 
@@ -43,7 +42,7 @@ impl Connection {
         Self {
             testing,
             debug,
-            cookies: Cookie::new(),
+            cookies: HashMap::new(),
         }
     }
     pub(crate) fn url(&self) -> &'static str {
@@ -56,6 +55,7 @@ impl Connection {
         }
     }
 
+    /// Sends a request and returns the response data as a map
     pub(crate) fn send(
         &mut self,
         req: &Request,
@@ -87,6 +87,15 @@ impl Connection {
             _ => Err(RequestError::CallError(code, msg.to_string())),
         }
     }
+
+    fn header_map(&self) -> HeaderMap {
+        use reqwest::header::COOKIE;
+
+        self.cookies
+            .iter()
+            .map(|(n, v)| (COOKIE, format!("{}={}", n, v).parse().unwrap()))
+            .collect()
+    }
 }
 
 
@@ -99,41 +108,23 @@ impl<'a> Transport for INWXTransport<'a> {
     type Stream = Response;
 
     fn transmit(self, request: &XMLRequest) -> Result<Self::Stream, Box<Error + Send + Sync>> {
-        use xmlrpc::http::{build_headers, check_response};
         use reqwest::Client;
-        use reqwest::header::SetCookie;
-        use std::mem::replace;
+        use xmlrpc::http::{build_headers, check_response};
 
         let mut body = Vec::new();
         request.write_as_xml(&mut body).unwrap();
 
-        let mut req = Client::new().post(self.conn.url());
-        build_headers(&mut req, body.len() as u64);
+        let req = Client::new().post(self.conn.url());
+        let req = build_headers(req, body.len() as u64);
 
-        req.header(self.conn.cookies.clone());
-
-        req.body(body);
-        let res = req.send()?;
+        let res = req.headers(self.conn.header_map()).body(body).send()?;
         check_response(&res)?;
 
-        // eval the domrobot cookie
-        if let Some(&SetCookie(ref content)) = res.headers().get() {
-            let mut cookies = Cookie::new();
-            for cookie in content {
-                let mut parts = cookie.split(";").nth(0).unwrap().split("=");
-                let key = parts.nth(0);
-                let value = parts.nth(0);
-                match (key, value) {
-                    (Some(ref key), Some(ref value)) => {
-                        cookies.set(key.to_string(), value.to_string());
-                    }
-                    _ => {
-                        // ignore invalid cookies
-                    }
-                }
-            }
-
-            replace(&mut self.conn.cookies, cookies);
+        // update connection cookies
+        for cookie in res.cookies() {
+            self.conn
+                .cookies
+                .insert(cookie.name().into(), cookie.value().into());
         }
 
         Ok(res)
